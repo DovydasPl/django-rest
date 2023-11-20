@@ -17,3 +17,9 @@ class Post(models.Model):
     image = models.ImageField(upload_to='covers', null=True, blank=True)
 
     objects = PostQuerySet().as_manager()
+
+class PostLike(models.Model):
+    post = models.ForeignKey(Post,
+                             on_delete=models.CASCADE, related_name='likes')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE)

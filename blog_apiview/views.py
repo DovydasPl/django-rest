@@ -4,13 +4,12 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 
-from .models import Post
-from .serializers import PostSerializer, LoggedInUserPostSerializer
+from .models import Post, PostLike
+from .serializers import PostSerializer, CreatePostSerializer, LoggedInUserPostSerializer, PostLikeSerializer
 
 
 class PostListCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
 
     def get_queryset(self):
         query = self.request.GET.get('search')
@@ -20,17 +19,38 @@ class PostListCreateAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         posts = self.get_queryset()
-        serializer = PostSerializer(posts, many=True)
+        serializer = PostSerializer(posts, many=True, context={'request': request})
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
         post_data = request.data
-        serializer = PostSerializer(data=post_data)
+        serializer = CreatePostSerializer(data=post_data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            return Response({'success': 'Post has been created successfully!'})
         else:
             return Response(serializer.errors)
+        
+class PostLikeCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return PostLike.objects.filter(user=self.request.user, post_id=self.kwargs['pk']).first()
+
+    def post(self, request, *args, **kwargs):
+        post_like = self.get_queryset()
+        if post_like:
+            post_like.delete()
+            return Response({'success': 'no more like gg'})
+
+        post_data = request.data
+        serializer = PostLikeSerializer(data=post_data)
+        if serializer.is_valid():
+            serializer.save(user=self.request.user, post_id=self.kwargs['pk'])
+            return Response({'success': 'gg wp'})
+        else:
+            return Response(serializer.errors)
+
 
 
 class PostDetailUpdateDeleteAPIView(APIView):
@@ -112,3 +132,4 @@ class LoggedInUserPostDetailUpdateDeleteAPIView(APIView):
         post = self.get_queryset()
         post.delete()
         return Response({'message': 'Post has been successfully deleted!'})
+
