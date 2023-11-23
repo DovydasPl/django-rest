@@ -41,9 +41,9 @@ class RegisterAPIView(APIView):
             serializer.save()
             user = User.objects.get(email=request.data['email'])
             return Response({
-                'data': 'mldc. hello'
+                'success': 'You have registered successfully!'
             })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
 # class TestTokenAPIView(APIView):

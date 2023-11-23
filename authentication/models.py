@@ -41,7 +41,7 @@ class CustomUser(AbstractUser):
     username = None
     first_name = None
     last_name = None
-    email = models.EmailField('Email', unique=True)
+    email = models.EmailField('Email', unique=True, error_messages={'unique': 'User with this email already exists!'})
 
     USERNAME_FIELD = 'email'
     EMAIL_FIELD = 'email'
